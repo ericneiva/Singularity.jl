@@ -29,7 +29,7 @@ function generate_deffile(; excludepkgs = [], commit = "master", script = [])
 
         println(depsjl_file, strip(raw"""
         Bootstrap: library
-        From: crown421/default/juliabase:latest
+        From: ericneiva/default/juliabase:latest
 
         %setup
             dir=`pwd`
@@ -63,7 +63,22 @@ function generate_deffile(; excludepkgs = [], commit = "master", script = [])
 
             chmod -R a+rX $JULIA_DEPOT_PATH
             chmod -R a+rX /Project/scripts
+        """))
+        
+        print(depsjl_file, (raw"""
+            julia --project --startup-file=no --trace-compile=Precompile.jl src/GeneratePrecompile.jl
+            
+            julia --project --startup-file=no --output-o sys.o -J"/opt/julia/lib/julia/sys.so" CustomSysimage.jl
+            
+            gcc -shared -o sys.so -Wl,--whole-archive sys.o -Wl,--no-whole-archive -L"/opt/julia/lib" -ljulia
+            
+            rm -rf Precompile.jl
+        """))
 
+        print(depsjl_file, (raw"""
+        %environment
+            export JULIA_NUM_THREADS=1
+            
         %runscript
             if [ -z "$@" ]; then
         """))
@@ -83,8 +98,8 @@ function generate_deffile(; excludepkgs = [], commit = "master", script = [])
         end
         println(depsjl_file, (raw"""
             else
-                # if theres an argument, then run it! and hope its a julia script :)
-                julia --project=/Project -e "include(\\\"/Project/scripts/$@\\\")" > "$@-$(date +"%FT%H%M%S").log"
+                # if there is an argument, then run it! and hope its a julia script :)
+                julia --project=/Project --threads $JULIA_NUM_THREADS -J "/Project/sys.so" -e "include(\\\"/Project/scripts/$@\\\")" > "$@-$(date +"%FT%H%M%S").log"
             fi
         """))
     end
