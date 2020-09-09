@@ -77,7 +77,7 @@ function generate_deffile(; excludepkgs = [], commit = "master", script = [])
 
         print(depsjl_file, (raw"""
         %environment
-            export JULIA_NUM_THREADS=1
+            export JULIA_NUM_THREADS=${JULIA_NUM_THREADS:-1}
             
         %runscript
             if [ -z "$@" ]; then
