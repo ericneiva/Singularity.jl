@@ -76,9 +76,6 @@ function generate_deffile(; excludepkgs = [], commit = "master", script = [])
         """))
 
         print(depsjl_file, (raw"""
-        %environment
-            export JULIA_NUM_THREADS=${JULIA_NUM_THREADS:-1}
-            
         %runscript
             if [ -z "$@" ]; then
         """))
@@ -99,7 +96,7 @@ function generate_deffile(; excludepkgs = [], commit = "master", script = [])
         println(depsjl_file, (raw"""
             else
                 # if there is an argument, then run it! and hope its a julia script :)
-                julia --project=/Project --threads $JULIA_NUM_THREADS -J "/Project/sys.so" -e "include(\\\"/Project/scripts/$@\\\")" > "$@-$(date +"%FT%H%M%S").log"
+                julia --project=/Project -J "/Project/sys.so" -e "include(\\\"/Project/scripts/$@\\\")" > "$@-$(date +"%FT%H%M%S").log"
             fi
         """))
     end
