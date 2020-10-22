@@ -43,6 +43,9 @@ function generate_deffile(; excludepkgs = [], commit = "master", script = [])
             export JULIA_DEPOT_PATH=/user/.julia
             export PATH=/opt/julia/bin:$PATH
 
+            export PATH=/opt/ompi/bin:$PATH
+            export LD_LIBRARY_PATH=/opt/ompi/lib:$LD_LIBRARY_PATH
+
             cd Project
         """))
 
@@ -58,6 +61,8 @@ function generate_deffile(; excludepkgs = [], commit = "master", script = [])
 
         print(depsjl_file, (raw"""
             julia --project -e 'using Pkg; Pkg.instantiate()'
+
+            julia --project -e 'ENV["JULIA_MPI_BINARY"]="system"; using Pkg; Pkg.build("MPI"; verbose=true)'
 
             julia --project -e 'using Pkg; Pkg.precompile()'
 
